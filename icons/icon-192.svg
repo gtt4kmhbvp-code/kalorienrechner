@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- Background -->
+  <rect width="192" height="192" fill="#2c3e50" rx="45"/>
+  
+  <!-- Gradient for depth -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2980b9;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Apple/Food icon -->
+  <circle cx="96" cy="70" r="35" fill="url(#grad1)"/>
+  
+  <!-- Leaf on apple -->
+  <path d="M 125 50 Q 135 45 140 40" stroke="#e74c3c" stroke-width="3" fill="none" stroke-linecap="round"/>
+  
+  <!-- Calculator/Math symbol (÷ for dividing macros) -->
+  <g fill="#ecf0f1">
+    <!-- Horizontal line -->
+    <rect x="45" y="105" width="50" height="5" rx="2"/>
+    <!-- Vertical line -->
+    <rect x="68" y="85" width="5" height="50" rx="2"/>
+    <!-- Dots for division -->
+    <circle cx="56" cy="98" r="3" fill="#e74c3c"/>
+    <circle cx="78" cy="112" r="3" fill="#e74c3c"/>
+  </g>
+  
+  <!-- Macronutrient indicators at bottom -->
+  <g font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#ecf0f1">
+    <text x="35" y="155" text-anchor="middle">P</text>
+    <text x="96" y="155" text-anchor="middle">C</text>
+    <text x="157" y="155" text-anchor="middle">F</text>
+  </g>
+  
+  <!-- Small indicator bars -->
+  <rect x="30" y="165" width="10" height="15" rx="2" fill="#3498db"/>
+  <rect x="91" y="165" width="10" height="12" rx="2" fill="#e74c3c"/>
+  <rect x="152" y="165" width="10" height="8" rx="2" fill="#f39c12"/>
+</svg>

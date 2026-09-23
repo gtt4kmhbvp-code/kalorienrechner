@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kalorienrechner - Ein einfaches und benutzerfreundliches Werkzeug zur Makronährstoff-Berechnung">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kalorienrechner">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <title>Kalorienrechner</title>
+    
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --background-color: #ecf0f1;
+            --surface-color: #ffffff;
+            --text-color: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-color: #bdc3c7;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-color: #1a1a1a;
+                --surface-color: #2d2d2d;
+                --text-color: #ecf0f1;
+                --text-secondary: #bdc3c7;
+                --border-color: #444;
+                --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        [data-theme="dark"] {
+            --background-color: #1a1a1a;
+            --surface-color: #2d2d2d;
+            --text-color: #ecf0f1;
+            --text-secondary: #bdc3c7;
+            --border-color: #444;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: var(--transition);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .theme-toggle:focus-visible {
+            outline: 2px solid var(--secondary-color);
+            outline-offset: 2px;
+        }
+
+        .offline-indicator {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--accent-color);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: none;
+            gap: 8px;
+            align-items: center;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .offline-indicator.show {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        select:hover, input:hover {
+            border-color: var(--secondary-color);
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        button:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .results {
+            background-color: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .result-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+
+        .custom-foods {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .food-item {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .food-item:hover {
+            box-shadow: var(--shadow);
+            border-color: var(--secondary-color);
+        }
+
+        .food-item button {
+            background-color: var(--accent-color);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .food-item button:hover {
+            background-color: #c0392b;
+        }
+
+        .update-notification {
+            background-color: var(--success-color);
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            gap: 10px;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .update-notification.show {
+            display: flex;
+        }
+
+        .update-notification button {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+
+        .update-notification button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 15px;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .result-value {
+                font-size: 1.1rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .theme-toggle {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
+            }
+
+            .offline-indicator {
+                top: 70px;
+                right: 10px;
+                left: 10px;
+                justify-content: center;
+            }
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" aria-label="Dunkelmodus umschalten" title="Dunkelmodus umschalten">🌙</button>
+    <div class="offline-indicator" aria-live="polite" aria-label="Offline-Status">
+        <span>⚠️</span>
+        <span>Offline - App funktioniert ohne Internetverbindung</span>
+    </div>
+    <div class="update-notification" aria-live="polite" aria-label="App-Update verfügbar">
+        <span>✓</span>
+        <span>App-Update verfügbar</span>
+        <button>Neu laden</button>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Kalorienrechner</h1>
+            <p>Berechnen Sie Kalorien und Makronährstoffe</p>
+        </header>
+
+        <main>
+            <div class="form-group">
+                <label for="category">Kategorie</label>
+                <select id="category" aria-label="Lebensmittelkategorie wählen">
+                    <option value="">-- Kategorie wählen --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="food">Lebensmittel</label>
+                <select id="food" aria-label="Lebensmittel wählen">
+                    <option value="">-- Lebensmittel wählen --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Menge</label>
+                <input type="number" id="quantity" placeholder="z.B. 100" min="0" step="0.1" aria-label="Menge eingeben">
+            </div>
+
+            <div class="form-group">
+                <label for="unit">Einheit</label>
+                <select id="unit" aria-label="Einheit wählen">
+                    <option value="g">Gramm (g)</option>
+                    <option value="ml">Milliliter (ml)</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button onclick="calculateMacros()" aria-label="Makronährstoffe berechnen">Berechnen</button>
+                <button onclick="addCustomFood()" aria-label="Benutzerdefiniertes Lebensmittel hinzufügen">+ Eigenes</button>
+            </div>
+
+            <div id="results" class="results" style="display: none;">
+                <div class="result-item">
+                    <span class="result-label">Kalorien (kcal)</span>
+                    <span class="result-value" id="caloriesResult">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Protein (g)</span>
+                    <span class="result-value" id="proteinResult">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Kohlenhydrate (g)</span>
+                    <span class="result-value" id="carbsResult">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Fette (g)</span>
+                    <span class="result-value" id="fatsResult">0</span>
+                </div>
+            </div>
+
+            <section class="custom-foods">
+                <h2>Benutzerdefinierte Lebensmittel</h2>
+                <div id="customFoodsList"></div>
+                <button onclick="clearAllCustomFoods()" style="margin-top: 15px; background-color: var(--warning-color);" aria-label="Alle benutzerdefinierten Lebensmittel löschen">Alle löschen</button>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Food database
+        const foodDatabase = {
+            'Getränke': [
+                { name: 'Wasser', kcal: 0, protein: 0, carbs: 0, fats: 0, density: 1 },
+                { name: 'Schwarzer Tee (ungesüßt)', kcal: 2, protein: 0, carbs: 0, fats: 0, density: 1 },
+                { name: 'Kaffee (ungesüßt)', kcal: 1, protein: 0.1, carbs: 0, fats: 0, density: 1 },
+                { name: 'Vollmilch (3.5%)', kcal: 64, protein: 3.2, carbs: 4.8, fats: 3.6, density: 1.03 },
+            ],
+            'Milchprodukte': [
+                { name: 'Joghurt (Natur, 1.5%)', kcal: 41, protein: 3.5, carbs: 3.3, fats: 1.5, density: 1.02 },
+                { name: 'Käse (Cheddar)', kcal: 402, protein: 25, carbs: 1.3, fats: 33, density: 1.15 },
+                { name: 'Frischkäse', kcal: 342, protein: 5.9, carbs: 4.1, fats: 34.4, density: 1.05 },
+            ],
+            'Öle & Aufstriche': [
+                { name: 'Olivenöl', kcal: 884, protein: 0, carbs: 0, fats: 100, density: 0.91 },
+                { name: 'Erdnussbutter', kcal: 588, protein: 25.8, carbs: 20.5, fats: 50, density: 1.1 },
+                { name: 'Kokosöl', kcal: 892, protein: 0, carbs: 0, fats: 99.1, density: 0.92 },
+            ],
+            'Getreide & Backen': [
+                { name: 'Weizenmehl (Type 405)', kcal: 364, protein: 10.3, carbs: 76.3, fats: 1, density: 0.8 },
+                { name: 'Haferflocken', kcal: 389, protein: 17, carbs: 66.3, fats: 6.9, density: 0.7 },
+                { name: 'Weißbrot', kcal: 265, protein: 8, carbs: 50, fats: 1.5, density: 0.6 },
+                { name: 'Vollkornbrot', kcal: 227, protein: 8.7, carbs: 43.3, fats: 1.7, density: 0.65 },
+            ],
+            'Obst & Gemüse': [
+                { name: 'Apfel', kcal: 52, protein: 0.3, carbs: 13.8, fats: 0.2, density: 0.75 },
+                { name: 'Banane', kcal: 89, protein: 1.1, carbs: 23, fats: 0.3, density: 0.8 },
+                { name: 'Broccoli (roh)', kcal: 34, protein: 2.8, carbs: 7, fats: 0.4, density: 1.1 },
+                { name: 'Karotte (roh)', kcal: 41, protein: 0.9, carbs: 10, fats: 0.2, density: 1.05 },
+                { name: 'Tomate (roh)', kcal: 18, protein: 0.9, carbs: 3.9, fats: 0.2, density: 1.05 },
+                { name: 'Spinat (roh)', kcal: 23, protein: 2.7, carbs: 3.6, fats: 0.4, density: 1.1 },
+            ],
+            'Fleisch & Eier': [
+                { name: 'Hühnchen (Brust, gekocht)', kcal: 165, protein: 31, carbs: 0, fats: 3.6, density: 1.15 },
+                { name: 'Rindfleisch (mageres Hackfleisch)', kcal: 217, protein: 22, carbs: 0, fats: 14, density: 1.1 },
+                { name: 'Schweinefleisch (Filet, gekocht)', kcal: 242, protein: 27, carbs: 0, fats: 14, density: 1.12 },
+                { name: 'Ei (Huhn, gekocht)', kcal: 155, protein: 13, carbs: 1.1, fats: 11, density: 1.05 },
+                { name: 'Lachs (gekocht)', kcal: 208, protein: 20, carbs: 0, fats: 13, density: 1.08 },
+            ]
+        };
+
+        // DOM Elements
+        const categorySelect = document.getElementById('category');
+        const foodSelect = document.getElementById('food');
+        const quantityInput = document.getElementById('quantity');
+        const unitSelect = document.getElementById('unit');
+        const resultsDiv = document.getElementById('results');
+        const customFoodsList = document.getElementById('customFoodsList');
+        const themeToggle = document.querySelector('.theme-toggle');
+        const offlineIndicator = document.querySelector('.offline-indicator');
+        const updateNotification = document.querySelector('.update-notification');
+
+        // Initialize
+        function init() {
+            populateCategories();
+            loadCustomFoods();
+            setupTheme();
+            registerServiceWorker();
+            setupOnlineOfflineHandlers();
+        }
+
+        function populateCategories() {
+            categorySelect.innerHTML = '<option value="">-- Kategorie wählen --</option>';
+            Object.keys(foodDatabase).forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        categorySelect.addEventListener('change', function() {
+            foodSelect.innerHTML = '<option value="">-- Lebensmittel wählen --</option>';
+            if (this.value) {
+                foodDatabase[this.value].forEach((food, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = food.name;
+                    foodSelect.appendChild(option);
+                });
+            }
+            resultsDiv.style.display = 'none';
+        });
+
+        function calculateMacros() {
+            const category = categorySelect.value;
+            const foodIndex = foodSelect.value;
+            const quantity = parseFloat(quantityInput.value);
+
+            if (!category || !foodIndex || isNaN(quantity) || quantity <= 0) {
+                alert('Bitte füllen Sie alle Felder aus');
+                return;
+            }
+
+            const food = foodDatabase[category][foodIndex];
+            const density = unitSelect.value === 'g' ? 1 : food.density;
+            const actualQuantity = quantity * density;
+
+            const multiplier = actualQuantity / 100;
+            const calories = Math.round(food.kcal * multiplier);
+            const protein = (food.protein * multiplier).toFixed(1);
+            const carbs = (food.carbs * multiplier).toFixed(1);
+            const fats = (food.fats * multiplier).toFixed(1);
+
+            document.getElementById('caloriesResult').textContent = calories;
+            document.getElementById('proteinResult').textContent = protein;
+            document.getElementById('carbsResult').textContent = carbs;
+            document.getElementById('fatsResult').textContent = fats;
+
+            resultsDiv.style.display = 'block';
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function addCustomFood() {
+            const category = categorySelect.value;
+            const foodIndex = foodSelect.value;
+
+            if (!category || foodIndex === '') {
+                alert('Bitte wählen Sie ein Lebensmittel aus');
+                return;
+            }
+
+            const food = foodDatabase[category][foodIndex];
+            const customId = 'c' + Date.now();
+
+            try {
+                const customFoods = JSON.parse(localStorage.getItem('customFoods') || '{}');
+                customFoods[customId] = {
+                    name: food.name,
+                    category: category,
+                    ...food
+                };
+                localStorage.setItem('customFoods', JSON.stringify(customFoods));
+                loadCustomFoods();
+                alert(`${food.name} wurde hinzugefügt`);
+            } catch (e) {
+                console.error('Fehler beim Speichern:', e);
+                alert('Lebensmittel konnte nicht gespeichert werden');
+            }
+        }
+
+        function loadCustomFoods() {
+            try {
+                const customFoods = JSON.parse(localStorage.getItem('customFoods') || '{}');
+                customFoodsList.innerHTML = '';
+
+                if (Object.keys(customFoods).length === 0) {
+                    customFoodsList.innerHTML = '<p style="color: var(--text-secondary);">Keine benutzerdefinierten Lebensmittel gespeichert</p>';
+                    return;
+                }
+
+                Object.entries(customFoods).forEach(([id, food]) => {
+                    const item = document.createElement('div');
+                    item.className = 'food-item';
+                    item.innerHTML = `
+                        <div>
+                            <strong>${food.name}</strong>
+                            <br>
+                            <small style="color: var(--text-secondary);">${food.kcal} kcal | P: ${food.protein}g K: ${food.carbs}g F: ${food.fats}g</small>
+                        </div>
+                        <button onclick="deleteCustomFood('${id}')" aria-label="Löschen: ${food.name}">Löschen</button>
+                    `;
+                    customFoodsList.appendChild(item);
+                });
+            } catch (e) {
+                console.error('Fehler beim Laden:', e);
+            }
+        }
+
+        function deleteCustomFood(id) {
+            try {
+                const customFoods = JSON.parse(localStorage.getItem('customFoods') || '{}');
+                delete customFoods[id];
+                localStorage.setItem('customFoods', JSON.stringify(customFoods));
+                loadCustomFoods();
+            } catch (e) {
+                console.error('Fehler beim Löschen:', e);
+            }
+        }
+
+        function clearAllCustomFoods() {
+            if (confirm('Sind Sie sicher, dass Sie alle benutzerdefinierten Lebensmittel löschen möchten?')) {
+                try {
+                    localStorage.setItem('customFoods', '{}');
+                    loadCustomFoods();
+                } catch (e) {
+                    console.error('Fehler beim Löschen:', e);
+                }
+            }
+        }
+
+        function setupTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '☀️';
+            }
+
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                this.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+            });
+        }
+
+        function setupOnlineOfflineHandlers() {
+            function updateOnlineStatus() {
+                if (navigator.onLine) {
+                    offlineIndicator.classList.remove('show');
+                } else {
+                    offlineIndicator.classList.add('show');
+                }
+            }
+
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus();
+        }
+
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('sw.js');
+                    console.log('Service Worker registriert:', registration);
+
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                updateNotification.classList.add('show');
+                                updateNotification.querySelector('button').onclick = () => {
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                    window.location.reload();
+                                };
+                            }
+                        });
+                    });
+                } catch (error) {
+                    console.error('Service Worker Fehler:', error);
+                }
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                calculateMacros();
+            }
+        });
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', init);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
